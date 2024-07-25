@@ -3,7 +3,7 @@
 
 # Atualizar os repositórios e instalar o OpenVPN.
 sudo apt-get update && \
-sudo apt-get install -y openvpn && \
+sudo apt-get install -y openvpn
 
 # Criar diretório para as chaves.
 sudo mkdir -p /etc/openvpn/keys && \
