@@ -1,37 +1,31 @@
-#!/bin/bash
-
-# Atualizar os repositórios e instalar o OpenVPN.
-sudo apt-get update && \
-sudo apt-get install -y openvpn
-
-# Criar diretório para as chaves.
-sudo mkdir -p /etc/openvpn/keys && \
-cd /etc/openvpn/keys
-
-# Gerando chave estatica.
-sudo openvpn --genkey --secret openvpn.key
-
-# Solicitar o IP remoto ao usuário
-read -p "Digite o endereço IP_1 do servidor: " IP_1
-read -p "Digite o endereço IP_2 do servidor: " IP_2
-read -p "Digite o endereço IP remoto: " IP_REMOTO
-
-# Criar arquivo de configuração do servidor
-cd /etc/openvpn/server
-sudo tee server.conf > /dev/null <<EOL
+# Interface da VPN
 dev tun
-proto udp
-ifconfig $IP_1 $IP_2
-remote $IP_REMOTO
-secret /etc/openvpn/keys/openvpn.key
-keepalive 10 120
-daemon
-EOL
 
-# Adicionando na iptables
-sudo iptables -A INPUT -p udp --dport 1194 -j ACCEPT
-sudo iptables -A INPUT -i tun+ -j ACCEPT
-sudo iptables -A FORWARD -i tun+ -j ACCEPT
+# Endereço IP de Internet do servidor
+remote 192.168.100.25
 
-# Rodar o OpenVPN com a configuração criada
-sudo systemctl start openvpn-server@server
+# Endereço IP servidor/filial
+ifconfig 10.10.10.2 10.10.10.1
+
+# Porta VPN
+port 1194
+
+# Parâmetros de ping em ms
+ping 15
+ping-restart 45
+ping-timer-rem
+
+# Mantém a interface tun carregada quando a VPN é reiniciada
+persist-tun
+
+# Mantém a chave carregada quando a VPN é reiniciada
+persist-key
+
+# Nível do log
+verb 3
+
+# Caso o IP mude, o túnel continua estabelecido
+float
+
+# Autenticação por fingerprint
+peer-fingerprint sha256 <fingerprint-do-cliente>
